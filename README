@@ -1,0 +1,18 @@
+Doit contenir une description succincte de votre travail.
+
+Exercice 5 :
+	Afin de tester les fonctions, il y a dans le typing.ml des exemples d'expressions à tester avec différents environnements. Vous pouvez tester la fonction tp_expr sur ces expressions en utilisant use.ml comme vous l'avez expliqué dans le sujet.
+
+	Afin de tester la génération du java bytecode faite par gen_exp. Vous pouvez utiliser le Wrapper. 
+	J'ai modifié gen_prog dans gen.ml afin que la fonction s'adapte à l'environnement qu'on lui fournit. Deux fonctions vont directement calculer le nombres de variables qui se trouvent dans l'environnement et les passer en paramètres de gen_prog.
+	Il suffit juste de modifier le Wrapper.java (et non le wrapper et gen_prog) à chaque fois en lui rentrant le même nombre d'arguments que de variables qui se trouvent dans l'environnement.
+
+
+Problèmes et difficultés rencontrés :
+	Je n'ai pas rencontré de problèmes majeurs pour effectuer ce projet.
+	J'ai juste mis beaucoup de temps à bien comprendre les types fournis et les assimiler afin de créer mes fonctions. Comme il y a beaucoup de types j'ai souvent développé des fonctions qui renvoyaient des erreurs de types et il m'a fallu quelques temps afin de comprendre comment les convertir et les utiliser correctement.
+
+	
+
+Nota Bene : 
+	Il y a quelques fonctions non exhaustives. C'est normal. Certaines ne concernent que les CallE et d'autres que le Const, VarE, BinOp et IfThenElse. Il est donc impossible de rentrer dans les cas non traités de ces fonctions.
