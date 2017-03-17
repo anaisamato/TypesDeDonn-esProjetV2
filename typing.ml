@@ -116,30 +116,3 @@ let expr5 = BinOp (0, BCompar BCeq , VarE (0, Var (Local , "n")),
 let env1 = { localvar = [("n", IntT ); ("k", IntT );("t", IntT)]; globalvar = []; returntp = VoidT ; funbind = []};;
 let env2 = { localvar = [("n", IntT ); ("k", IntT )]; globalvar = []; returntp = VoidT ; funbind = [Fundecl (IntT , "f", [ Vardecl (IntT , "n"); Vardecl (BoolT , "b")])]};;
 
-(* Part two *)
-(* Exercice 6 *)
-
-  
-(* tp_smtp, type an instruction with VoidT *)
-let rec tp_stmt env = function
-	Skip -> Skip
-	|Assign (tp, var, expr) -> Assign (VoidT, var, tp_expr env expr)
-	|Seq (stmt1, stmt2) -> Seq ((tp_stmt env stmt1), (tp_stmt env stmt2))
-	|Cond (expr, stmt1, stmt2) -> 	if tp_of_expr(tp_expr env expr) = BoolT then 
-                                 		Cond ((tp_expr env expr), (tp_stmt env stmt1), (tp_stmt env stmt2))
-                                	else raise Error
-	|While (expr, stmt) -> 	if tp_of_expr(tp_expr env expr) = BoolT then
-                        		While ((tp_expr env expr), (tp_stmt env stmt))
-                        	else raise Error
-	|Return (expr) -> Return (tp_expr env expr);;
-(* val tp_stmt : environment -> smtm -> tp stmt = <fun> *)
-
-
-
-(* examples of stmt *)
-let stmt = Skip;;
-let stmt2 = Assign (0, Var (Local , "k"), expr1);;
-let stmt3 = Seq (stmt, stmt2);;
-let stmt4 = Cond(expr2, stmt, stmt2);;
-let stmt5 = While(expr2, stmt2);;
-let stmt6 = Return(expr1);;
