@@ -125,8 +125,8 @@ let rec tp_CallC env = function
   
 (* tp_smtp, type an instruction with VoidT *)
 let rec tp_stmt env = function
-	Skip -> Skip
-	|Assign (tp, var, expr) -> Assign (tp_of_expr(tp_expr env expr), var, tp_expr env expr)
+	 Skip -> Skip
+	|Assign (tp, var, expr) -> Assign (VoidT, var, tp_expr env expr)
 	|Seq (stmt1, stmt2) -> Seq ((tp_stmt env stmt1), (tp_stmt env stmt2))
 	|Cond (expr, stmt1, stmt2) -> 	if tp_of_expr(tp_expr env expr) = BoolT then 
                                     	Cond ((tp_expr env expr), (tp_stmt env stmt1), (tp_stmt env stmt2))
@@ -139,15 +139,36 @@ let rec tp_stmt env = function
 (* val tp_stmt : environment -> smtm -> tp stmt = <fun> *)
 
 
+(* reverse  a (tp * vname) in (vname *tp) *)
+let rec reverse = function
+		[] -> []
+		|a::q -> (name_of_vardecl(a), tp_of_vardecl(a))::reverse(q);;
+(* val reverse : vardecl list -> (vname * tp) list = <fun>*)
+
+(* recup global Variables of an Fundecl *)
+let rec recupGlobalVar = function
+	Fundecl (_, _, []) -> []
+	|Fundecl(t, name, (Vardecl(a,b))::q) -> (b,a)::recupGlobalVar (Fundecl(t, name, q));;
+(* val recupGlobalVar : fundecl -> (vname * tp) list = <fun> *) 
+
+
+(* complete an environment with localVar, globarVar and return tp *)
+let completeEnv = function
+	env, fundecl, (a::q) -> let lvar = reverse (a::q)
+								in let gvar = recupGlobalVar fundecl 
+									in let t = check_function_type (fundecl, (a::q))
+										in 	{localvar = lvar;
+					 						globalvar = gvar;
+					 						returntp = t;
+					 						funbind = (env.funbind)@[fundecl]};;
+(* val completeEnv : environment * fundecl * vardecl list -> environment = <fun> *)
+
 
 (* tp_fdefn : check a definition of a function with an environment *)
-l(*et tp_fdefn env = function
-	decl, [], stmt -> 
-	
+let tp_fdefn env = function
+	(fundecl, a::q, stmt) -> let newEnv = completeEnv (env, fundecl, a::q) in tp_stmt newEnv stmt;;
+(* val tp_fdefn : environment -> fundecl * vardecl list * stmt -> tp stmt = <fun> *)
 
-(* type 'a fundefn =
-    Fundefn of fundecl * (vardecl list) * ('a stmt)
-    		declaration		*)
 
 (* examples of stmt *)
 let stmt = Skip;;
@@ -157,3 +178,7 @@ let stmt4 = Cond(expr2, stmt, stmt2);;
 let stmt5 = While(expr2, stmt2);;
 let stmt6 = CallC ("fun1", [expr1;expr2]);;
 let stmt7 = Return(expr1);;
+
+(* examples of definitions of functions *)
+let fund = Fundecl (IntT , "f", [ Vardecl (IntT , "n"); Vardecl (BoolT , "b")]), [ Vardecl (IntT , "k"); Vardecl (BoolT , "x")], stmt2;;
+let fund2 = Fundecl (IntT , "g", [ Vardecl (IntT , "m"); Vardecl (BoolT , "p")]), [ Vardecl (IntT , "k"); Vardecl (BoolT , "x")], stmt6;;
