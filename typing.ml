@@ -182,3 +182,32 @@ let stmt7 = Return(expr1);;
 (* examples of definitions of functions *)
 let fund = Fundecl (IntT , "f", [ Vardecl (IntT , "n"); Vardecl (BoolT , "b")]), [ Vardecl (IntT , "k"); Vardecl (BoolT , "x")], stmt2;;
 let fund2 = Fundecl (IntT , "g", [ Vardecl (IntT , "m"); Vardecl (BoolT , "p")]), [ Vardecl (IntT , "k"); Vardecl (BoolT , "x")], stmt6;;
+
+let buildEnv = function
+	Vardecl(t, name)::b -> let newEnv = {
+							localvar = [];
+	 						globalvar = [(name, t)];
+	 						returntp = VoidT;
+	 						funbind = []
+							} in let rec aux env = function
+									Vardecl(t,name)::c -> {localvar = [];
+														globalvar = [(name, t)]@env.globalvar;
+														returntp = VoidT;
+														funbind = []} 
+													in aux newEnv b;;
+(* Lang.vardecl list -> Typing.environment = <fun> *)
+
+let rec tp_prog = function
+	Prog(vardecl::a, fundefn::b) -> let newEnv = buildEnv (vardecl::a) in 
+												let rec aux env = function
+													[] -> []
+													|Fundefn(f,v,st)::q -> Fundefn(f,v, (tp_fdefn env (f,v,st)))::aux env q
+
+												in Prog(vardecl::a, aux newEnv (fundefn::b));;
+(* - : int Lang.prog -> Lang.tp Lang.prog = <fun> *)
+
+
+let fundefn = Fundefn(Fundecl (IntT , "f", [ Vardecl (IntT , "n"); Vardecl (BoolT , "b")]), [Vardecl (IntT , "k"); Vardecl (BoolT , "x")], stmt2);;
+let vardecl =  [ Vardecl (IntT , "n"); Vardecl (BoolT , "b")];;
+
+let prog  = Prog(vardecl, [fundefn]);;
