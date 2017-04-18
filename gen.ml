@@ -26,13 +26,23 @@ let varAux = function
   Var(_, a) -> a;;
 (* val varAux  var -> vname = <fun> *)
  
-(* generate bytecode *)
-let rec gen_exp liste = function
-   Const(t, v)-> [Loadc (t ,v)]
-  |VarE (t,v)  -> [Loadv (t, position(varAux v) liste)]
-  |BinOp (t, binop, exp1, exp2)-> (gen_exp liste exp1)@(gen_exp liste exp2)@([Bininst(t, binop)]);;
-(* val gen_exp : vname list -> tp expr -> instr list = <fun> *)
+let recupCompar = function
+  BinOp(_, BCompar c, _, _) -> c;;
 
+
+(* generate bytecode *)
+let rec gen_exp compt liste = function
+   Const(t, v)-> [Label ([compt]) ;Loadc (t ,v)]
+  |VarE (t,v)  -> [Label ([compt]); Loadv (t, position(varAux v) liste)]
+  |BinOp (t, binop, exp1, exp2)-> (gen_exp compt liste exp1)@(gen_exp (compt+1) liste exp2)@([Label([compt+2]);Bininst(t, binop)])
+  |IfThenElse(t, exprIf, exprThen, exprElse) ->  let compar = recupCompar exprIf in match exprIf with
+                                                                                      BinOp(_,_, a,b) -> let genA = gen_exp (compt+1) liste a
+                                                                                                in let genB = gen_exp (compt+2) liste b
+                                                                                              in
+                                             genA@genB@[Label([compt+3]);If(compar, [compt+4])]@
+                                                  (gen_exp (compt+4) liste exprThen)@
+                                                 (gen_exp (compt+5) liste exprElse);;
+(* val gen_exp : vname list -> tp expr -> instr list = <fun> *)
 
 (* Gen_expr Automitisation *)
 let couple = function
@@ -58,6 +68,6 @@ let gen_prog (Prog (gvds, fdfs)) =
   JVMProg ([], 
            [Methdefn (Methdecl (IntT, "even", (nbVarEnv env1)), 
                       Methinfo (10, 10), (* limit stack et limit local *)
-                      ((gen_exp (listOfVar env1) (tp_expr env1 expr1))@[ReturnI (tp_of_expr(tp_expr env1 expr1))]) (* test an expression of typing.ml with an environment *)
+                      ((gen_exp 0 (listOfVar env1) (tp_expr env1 expr5))@[ReturnI (tp_of_expr(tp_expr env1 expr5))]) (* test an expression of typing.ml with an environment *)
                       (* here, test the expr1 in typing.ml with the env1 *)
           )]);;
